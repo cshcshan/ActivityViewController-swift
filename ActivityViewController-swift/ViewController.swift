@@ -31,6 +31,7 @@ import UIKit
 
 class ViewController: UIViewController {
   @IBOutlet weak var activity_BarButtonItem: UIBarButtonItem!
+  @IBOutlet weak var screenshot_View: UIView!
   var alertController: UIAlertController!
   var activityDataType: Int = -1
 
@@ -61,10 +62,15 @@ class ViewController: UIViewController {
       self.activityDataType = 2
       self.displayActivityViewController()
     }
+    let screenshot_AlertAction = UIAlertAction(title: "Screenshot", style: .Default) { (action) in
+      self.activityDataType = 3
+      self.displayActivityViewController()
+    }
     let cancel_AlertAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
     self.alertController.addAction(onlyString_AlertAction)
     self.alertController.addAction(onlyUrl_AlertAction)
     self.alertController.addAction(localImage_AlertAction)
+    self.alertController.addAction(screenshot_AlertAction)
     self.alertController.addAction(cancel_AlertAction)
   }
 
@@ -93,6 +99,8 @@ class ViewController: UIViewController {
       activityItems = self.activityOnlyUrl()
     case 2:
       activityItems = self.activityLocalImage()
+    case 3:
+      activityItems = self.activityScreenshot()
     default:
       activityItems = self.activityOnlyString()
     }
@@ -132,6 +140,16 @@ class ViewController: UIViewController {
   
   func activityLocalImage() -> [AnyObject] {
     return [UIImage(named: "img")!]
+  }
+  
+  func activityScreenshot() -> [AnyObject] {
+    let opaque = false // 不透明
+    let scale = UIScreen.mainScreen().scale
+    UIGraphicsBeginImageContextWithOptions(self.screenshot_View.frame.size, opaque, scale)
+    self.screenshot_View.layer.renderInContext(UIGraphicsGetCurrentContext()!)
+    let image = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return [image]
   }
 }
 
