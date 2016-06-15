@@ -7,40 +7,36 @@
 //
 
 import UIKit
-// http://nshipster.com/uiactivityviewcontroller/
-
-/*
- [UIActivityCategoryAction]
- UIActivityTypePrint
- UIActivityTypeCopyToPasteboard
- UIActivityTypeAssignToContact
- UIActivityTypeSaveToCameraRoll
- UIActivityTypeAddToReadingList
- UIActivityTypeAirDrop
- UIActivityCategoryShare
- 
- [UIActivityTypeMessage]
- UIActivityTypeMail
- UIActivityTypePostToFacebook
- UIActivityTypePostToTwitter
- UIActivityTypePostToFlickr
- UIActivityTypePostToVimeo
- UIActivityTypePostToTencentWeibo
- UIActivityTypePostToWeibo
- */
 
 class ViewController: UIViewController {
   @IBOutlet weak var activity_BarButtonItem: UIBarButtonItem!
   @IBOutlet weak var screenshot_View: UIView!
-  var alertController: UIAlertController!
-  var activityDataType: Int = -1
-
+  @IBOutlet weak var screenshot_ImageView: UIImageView!
+  var activity_AlertController: UIAlertController!
+  var screenshot_AlertController: UIAlertController!
+  
+  enum ACTIVITY_TYPE: Int {
+    case NONE
+    case ONLY_STRING
+    case ONLY_URL
+    case LOCAL_IMAGE
+    case SCREENSHOT
+  }
+  
+  enum SCREENSHOT_TYPE: Int {
+    case NONE
+    case FULL
+    case ONLY_VIEW
+    case ONLY_IMAGE
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view, typically from a nib.
     
     print("Model: \(UIDevice.currentDevice().model)")
-    self.setupAlertController()
+    self.setupActivity_AlertController()
+    self.setupScreenshot_AlertController()
   }
 
   override func didReceiveMemoryWarning() {
@@ -48,59 +44,88 @@ class ViewController: UIViewController {
     // Dispose of any resources that can be recreated.
   }
   
-  func setupAlertController() {
-    self.alertController = UIAlertController(title: "Select a data type", message: "", preferredStyle: .ActionSheet)
+  func setupActivity_AlertController() {
+    self.activity_AlertController = UIAlertController(title: "Activity", message: "Select a data type", preferredStyle: .ActionSheet)
     let onlyString_AlertAction = UIAlertAction(title: "Only String", style: .Default) { (action) in
-      self.activityDataType = 0
-      self.displayActivityViewController()
+      self.displayActivityViewController(.ONLY_STRING, screenshotType: .NONE)
     }
     let onlyUrl_AlertAction = UIAlertAction(title: "Only Url", style: .Default) { (action) in
-      self.activityDataType = 1
-      self.displayActivityViewController()
+      self.displayActivityViewController(.ONLY_URL, screenshotType: .NONE)
     }
     let localImage_AlertAction = UIAlertAction(title: "Local Image", style: .Default) { (action) in
-      self.activityDataType = 2
-      self.displayActivityViewController()
+      self.displayActivityViewController(.LOCAL_IMAGE, screenshotType: .NONE)
     }
     let screenshot_AlertAction = UIAlertAction(title: "Screenshot", style: .Default) { (action) in
-      self.activityDataType = 3
-      self.displayActivityViewController()
+      self.displayScreenshot_AlertController()
     }
     let cancel_AlertAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
-    self.alertController.addAction(onlyString_AlertAction)
-    self.alertController.addAction(onlyUrl_AlertAction)
-    self.alertController.addAction(localImage_AlertAction)
-    self.alertController.addAction(screenshot_AlertAction)
-    self.alertController.addAction(cancel_AlertAction)
+    self.activity_AlertController.addAction(onlyString_AlertAction)
+    self.activity_AlertController.addAction(onlyUrl_AlertAction)
+    self.activity_AlertController.addAction(localImage_AlertAction)
+    self.activity_AlertController.addAction(screenshot_AlertAction)
+    self.activity_AlertController.addAction(cancel_AlertAction)
+  }
+  
+  func setupScreenshot_AlertController() {
+    self.screenshot_AlertController = UIAlertController(title: "Screenshot", message: "Select a screenshot type.", preferredStyle: .Alert)
+    let fullScreen_AlertAction = UIAlertAction(title: "Full Screen", style: .Default) { (action) in
+      self.displayActivityViewController(.SCREENSHOT, screenshotType: .FULL)
+    }
+    let view_AlertAction = UIAlertAction(title: "Only View", style: .Default) { (action) in
+      self.displayActivityViewController(.SCREENSHOT, screenshotType: .ONLY_VIEW)
+    }
+    let image_AlertAction = UIAlertAction(title: "Only Image", style: .Default) { (action) in
+      self.displayActivityViewController(.SCREENSHOT, screenshotType: .ONLY_IMAGE)
+    }
+    let cancel_AlertAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
+    self.screenshot_AlertController.addAction(fullScreen_AlertAction)
+    self.screenshot_AlertController.addAction(view_AlertAction)
+    self.screenshot_AlertController.addAction(image_AlertAction)
+    self.screenshot_AlertController.addAction(cancel_AlertAction)
   }
 
   @IBAction func actionBarButtonItemPressed(sender: UIBarButtonItem) {
-    self.displayAlertController()
+    self.displayActivity_AlertController()
   }
   
-  func displayAlertController() {
+  func displayActivity_AlertController() {
     if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
       if let view: UIView = self.activity_BarButtonItem.valueForKey("view") as? UIView {
         let frame = view.frame
-        self.alertController.popoverPresentationController?.sourceView = view
-        self.alertController.popoverPresentationController?.sourceRect = CGRectMake(0, frame.size.height, 0, 0)
-        self.alertController.popoverPresentationController?.permittedArrowDirections = .Up
-        self.presentViewController(self.alertController, animated: true, completion: nil)
+        self.activity_AlertController.popoverPresentationController?.sourceView = view
+        self.activity_AlertController.popoverPresentationController?.sourceRect = CGRectMake(0, frame.size.height, 0, 0)
+        self.activity_AlertController.popoverPresentationController?.permittedArrowDirections = .Up
+        self.presentViewController(self.activity_AlertController, animated: true, completion: nil)
       }
     } else {
-      self.presentViewController(alertController, animated: true, completion: nil)
+      self.presentViewController(activity_AlertController, animated: true, completion: nil)
     }
   }
   
-  func displayActivityViewController() {
+  func displayScreenshot_AlertController() {
+    if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
+      if let view: UIView = self.activity_BarButtonItem.valueForKey("view") as? UIView {
+        let frame = view.frame
+        self.screenshot_AlertController.popoverPresentationController?.sourceView = view
+        self.screenshot_AlertController.popoverPresentationController?.sourceRect = CGRectMake(0, frame.size.height, 0, 0)
+        self.screenshot_AlertController.popoverPresentationController?.permittedArrowDirections = .Up
+        self.presentViewController(self.screenshot_AlertController, animated: true, completion: nil)
+      }
+    } else {
+      self.presentViewController(screenshot_AlertController
+        , animated: true, completion: nil)
+    }
+  }
+  
+  func displayActivityViewController(activityType: ACTIVITY_TYPE, screenshotType: SCREENSHOT_TYPE) {
     var activityItems: [AnyObject]?
-    switch self.activityDataType {
-    case 1:
+    switch activityType {
+    case .ONLY_URL:
       activityItems = self.activityOnlyUrl()
-    case 2:
+    case .LOCAL_IMAGE:
       activityItems = self.activityLocalImage()
-    case 3:
-      activityItems = self.activityScreenshot()
+    case .SCREENSHOT:
+      activityItems = self.activityScreenshot(screenshotType)
     default:
       activityItems = self.activityOnlyString()
     }
@@ -142,13 +167,25 @@ class ViewController: UIViewController {
     return [UIImage(named: "img")!]
   }
   
-  func activityScreenshot() -> [AnyObject] {
-    let opaque = false // 不透明
+  func activityScreenshot(type: SCREENSHOT_TYPE) -> [AnyObject] {
+    var layer: CALayer!
     let scale = UIScreen.mainScreen().scale
-    UIGraphicsBeginImageContextWithOptions(self.screenshot_View.frame.size, opaque, scale)
-    self.screenshot_View.layer.renderInContext(UIGraphicsGetCurrentContext()!)
+    let opaque = false // 不透明
+    
+    switch type {
+    case .FULL:
+      layer = UIApplication.sharedApplication().keyWindow?.layer
+    case .ONLY_VIEW:
+      layer = self.screenshot_View.layer
+    default:
+      layer = self.screenshot_ImageView.layer
+    }
+    
+    UIGraphicsBeginImageContextWithOptions((layer?.frame.size)!, opaque, scale)
+    layer?.renderInContext(UIGraphicsGetCurrentContext()!)
     let image = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
+//    UIImageWriteToSavedPhotosAlbum(screenShot_Image, nil, nil, nil)
     return [image]
   }
 }
